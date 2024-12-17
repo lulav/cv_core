@@ -1,0 +1,8 @@
+cam0:
+  camera_model: pinhole
+  intrinsics: [402.2875884269033, 402.27348159196305, 331.54260440803483, 203.59389426713713]
+  distortion_model: radtan
+  distortion_coeffs: [0.0043223786911166, -0.0448405164285339, 0.00019498020227043123, -0.0013197399563750606]
+  resolution: [640, 400]
+  rostopic: /left/image_raw
+
