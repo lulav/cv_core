@@ -73,5 +73,3 @@ class Rigid3dTform:
         T = self.T * other.T
         return Rigid3dTform(T[:3,:3], T[:3,3])
 
-
-
