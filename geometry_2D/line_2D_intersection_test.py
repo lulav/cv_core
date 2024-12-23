@@ -5,9 +5,7 @@ matplotlib.use('TkAgg')
 import line_2D_intersection as l2di
 
 
-if __name__ == "__main__":
-
-    draw = True
+def intersect_image_borders_rectangle(draw=False):
 
     image_width = 640
     image_height = 480
@@ -88,13 +86,20 @@ if __name__ == "__main__":
 
     res = np.all(np.abs(intersection_points_ref - intersection_points) < 1e-7)
 
+    if draw:
+        plt.show(block=True)
+
+    return res
+
+if __name__ == "__main__":
+
+    draw = True
+    res = intersect_image_borders_rectangle(draw=draw)
+
     if res:
         print('line_2D_intersection test PASSED!')
     else:
         print('line_2D_intersection test FAILED!')
-
-    if draw:
-        plt.show(block=True)
 
     print('Done!')
 

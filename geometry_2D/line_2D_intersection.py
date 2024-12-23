@@ -187,6 +187,8 @@ def intersect_segments(p1, p2, p3, p4, epsilon=1e-8):
 def intersect_polygon(poly_points, p1, p2, epsilon=1e-8):
     """
     intersect two point segment with polygon
+    Does not support self-intersecting polygon (actually this function still works well for self-intersecting polygons,
+    but might miss intersection points close to polygon self intersection)
 
     :param poly_points: [n,2] numpy array - ordered polygon points
     :param p1: (x,y) segment 1 first point
@@ -195,18 +197,26 @@ def intersect_polygon(poly_points, p1, p2, epsilon=1e-8):
     :return: intersection_points (x,y)
              num_intersection_points: number of valid intersection points
     """
+    # TODO: handle more cases - what if segments are parallel, and overlap? inf number of intersections?
 
     num_intersection_points = 0
     intersection_points = []
     for i in range(poly_points.shape[0]-1):
         ip, st = intersect_segments(p1, p2, poly_points[i, :], poly_points[i+1, :], epsilon=epsilon)
         if st==0:
-            intersection_points.append(ip)
-            num_intersection_points = num_intersection_points + 1
+            d = [np.linalg.norm(x - ip) for x in intersection_points]
+            if len(d) == 0 or min(d) > epsilon:
+                intersection_points.append(ip)
+                num_intersection_points = num_intersection_points + 1
 
     ip, st = intersect_segments(p1, p2, poly_points[-1, :], poly_points[0, :], epsilon=epsilon)
     if st==0:
-        intersection_points.append(ip)
-        num_intersection_points = num_intersection_points + 1
+        d = [np.linalg.norm(x - ip) for x in intersection_points]
+        if len(d) == 0 or min(d) > epsilon:
+            intersection_points.append(ip)
+            num_intersection_points = num_intersection_points + 1
+
+    # in case intersection is close to a polygon vertex, two close intersection points will bw found
+    # We filter these duplicate points
 
     return np.array(intersection_points), num_intersection_points
