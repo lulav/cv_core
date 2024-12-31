@@ -135,6 +135,128 @@ class Plane3D:
         return projected_points, is_above_plane
 
 
+    def is_point_above_plane(self, points, epsilon=1e-9):
+        """
+        check if a point is above or below plane
+
+        :param points: 3D points [nX3]
+        :param epsilon: if a point is closer to plane than epsilon, it is considered on the plane
+        :return point_sign: sign that says if point is above or below plane
+                            1 = point is above plane
+                            0 = point is on the plane
+                            -1 = point is above plane
+        """
+
+        # check inputs
+        points = np.array(points)
+        if points.shape[1] != 3:
+            raise Exception('invalid point size!')
+
+        nx = self.normal[0, 0]
+        ny = self.normal[0, 1]
+        nz = self.normal[0, 2]
+
+        ox = self.origin[0, 0]
+        oy = self.origin[0, 1]
+        oz = self.origin[0, 2]
+
+        # check if point is above plane
+        d = nx * (points[:, 0] - ox) + ny * (points[:, 1] - oy) + nz * (points[:, 2] - oz)
+
+        point_sign = np.sign(d)
+        is_on_plane = np.abs(d.flatten()) < epsilon
+        point_sign[is_on_plane] = 0
+
+        return point_sign
+
+    def ray_intersection(self, ray_origin, ray_direction, epsilon=1e-9):
+        """
+        intersect ray with the plane
+
+        :param ray_origin: ray start point [m,3]
+        :param ray_direction: ray line of sight [m,3]
+        :param epsilon: minimal value for testing if ray is parallel to plane
+
+        :return:  intersection_points - 3D world points - intersection of rays with plane [m,3]
+                  nan if for rays with no intersection
+        :return:  validIndex - 2  ray intersects plane from above
+                               1  ray intersects plane from below
+                               0  no intersection
+
+        algorithm:
+        ----------
+        plane is defined by O_plane = (ox,oy,oz)' - point on plane
+                                  N = (nx,ny,nz)'     - plane normal
+        we use plane equation is:
+                 nx*(x-ox) + ny*(y-oy) + nz*(z-oz) = 0
+
+        LOS is defined by: O_cam = (cx,cy,cz)'   - los origin (camera position)
+                            los = (lx,ly,lz)'   - los direction
+        we use los parametrization:
+            (x,y,z) = (cx+lx*t ,cy+ly*t ,cz+lz*t )
+
+        solving t for intersection point P satisfies two equations:
+                - ( nx*(cx-ox) + ny*(cy-oy) + nz*(cz-oz) )
+        1) tp = -----------------------------------------------
+                            nx*lx + ny*ly + nz*lz
+        2) P = (cx+lx*tp ,cy+ly*tp ,cz+lz*tp)
+
+        and in vector form:
+         1) tp = -  dot( N, (O_cam-O_plane) ) / dot( N, los )
+         2) P = O_cam + tp*los
+            tp>0 - in front of ray
+            tp<0 - behind ray
+
+
+        """
+
+        # check inputs
+        ray_origin = np.array(ray_origin)
+        if ray_origin.shape[1] == 3:
+            n = ray_origin.shape[0]
+        else:
+            raise Exception('invalid ray_origin!')
+
+        ray_direction = np.array(ray_direction)
+        if ray_direction.shape != (n, 3):
+            raise Exception('invalid ray_direction!')
+
+        # normalize ray direction
+        ray_direction = ray_direction / np.reshape(np.linalg.norm(ray_direction, axis=1), (n, 1))
+
+        # find rays not parallel to plane
+        idx0 = np.abs(np.dot(ray_direction, self.normal.transpose())) > epsilon
+        idx0 = idx0.flatten()
+        C = ray_origin[idx0, :]
+        O = self.origin.transpose()
+
+        tp = np.zeros((n, 1)) + np.nan
+        tp_tmp = - np.divide(np.matmul(self.normal, (C[idx0, :].transpose() - O)),
+                             np.matmul(self.normal, ray_direction[idx0, :].transpose()))
+        tp[idx0, :] = tp_tmp.transpose()
+
+        intersection_points = np.zeros((n, 3)) + np.nan
+        intersection_points[idx0, :] = ray_direction[idx0, :] * tp[idx0, :] + C[idx0, :]
+
+        # check if intersection is before ray
+        idx_point_in_front_of_ray = tp.flatten() > 0
+        idx_point_in_behind_ray = np.bitwise_not(idx_point_in_front_of_ray)
+        intersection_points[idx_point_in_behind_ray, :] = np.nan
+
+        # check if intersection is above plane
+        d = intersection_points - ray_origin
+        cosa = np.matmul(d, self.normal.transpose())
+        idx_ray_above_plane = cosa.flatten() < 0
+
+        valid_index = np.zeros(n)
+
+        intersect_above_plane = np.bitwise_and(idx_point_in_front_of_ray, idx_ray_above_plane)
+        intersect_below_plane = np.bitwise_and(idx_point_in_front_of_ray, np.bitwise_not(idx_ray_above_plane))
+        valid_index[intersect_above_plane] = 2
+        valid_index[intersect_below_plane] = 1
+
+        return intersection_points, valid_index
+
     def plot(self, points, lims_scale_factor=1, ax=None, color=(0.5, 0.5, 1), alpha=0.6):
         """
         plot plane. plane limita will be taken from the extreme x,y in points
