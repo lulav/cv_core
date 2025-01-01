@@ -73,6 +73,8 @@ class CameraStereoCalibrator:
         print('----- found {} stereo_frames\n'.format(num_matches))
         if num_matches != len(frame_ids_left) or num_matches != len(frame_ids_right):
             raise Exception('frame with no stereo match!')
+        if num_matches == 0:
+            raise Exception('no stereo match found!')
 
         # get intrinsic calibration
         if not os.path.isfile(intrinsic_calibration_file_left):
