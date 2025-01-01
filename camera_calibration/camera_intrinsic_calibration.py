@@ -47,6 +47,8 @@ class CameraIntrinsicCalibrator:
         """
         # get image files
         self.image_files = ccu.get_images(images_dir)
+        if len(self.image_files) == 0:
+            raise Exception('no images found in: {}!'.format(images_dir))
         print('----- found {} images\n'.format(len(self.image_files)))
 
         # prepare object points
