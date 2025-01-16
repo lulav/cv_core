@@ -1,10 +1,10 @@
 # Computer Vision Core
-This repo contains core utilities to be used in various computer vision projects.
 
+This repo is organized as a python package that contains utilities for various computer vision problems.
 
  ![computer vision core image](./doc/computer_vision_core.jpg)
 
-This repo is a collection of utilities covering various problems that are usefull for computer vision. This repo is organized as a python package.
+We mostly use opencv / numpy / scipy functionality to implement higher level utilities that are easier to use. The explicit implementation and software architecture in this repo are also a good reference for dedicated implementation (e.g. unique embedded systems).    
 
 # Setup
 
@@ -13,3 +13,63 @@ install python 3.11+
 
 install python packages according to [requirements.txt](./requirements.txt)
 
+
+
+# Usage
+
+----
+
+import cv_core and use as a python package.
+
+This repo contains useful functionality in various computer vision areas. 
+
+
+## 2D Geometry
+
+The `cv_core.2D_geometry` module implements functionality that is related to basic 2D geometry.
+
+major notations:
+- 2D point is described by (x, y)
+- 2D line is described by (a, b, c) where ax+by+c=0
+
+Useful functionality:
+- line parameters from two points
+- point line parameterization
+- intersect two lines
+- intersect two line segments
+- intersect line segment with polygon
+
+
+
+## 3D Geometry
+
+The `cv_core.3D_geometry` module implements functionality that is related to basic 3D geometry.
+
+major notations:
+- 3D plane is handled by `Plane3D` class
+- rigid 3D transform is handled by `Rigid3dTform` class  
+
+Useful functionality:
+- 3D plane functionality:
+  - project points to plane (by normal direction or any axis)
+  - ray-plane intersection
+  - plot
+- Rigid3dTform functionality:
+  - invert
+  - multiply 
+  - transform points
+
+
+## Pinhole Camera
+
+The `cv_core.pinhole_camera` module implements functionality that is related to camera geometry.
+
+major notations:
+- camera is handled by `PinholeCamera` class
+
+Useful functionality:
+- PinholeCamera functionality:
+  - project world point to pixel
+  - back-project pixel to 3D world ray
+  - plot
+- lens selector utility
