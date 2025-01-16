@@ -27,6 +27,7 @@ This repo contains useful functionality in various computer vision areas.
 ## 2D Geometry
 
 The `cv_core.2D_geometry` module implements functionality that is related to basic 2D geometry.
+![2d geometry image](./doc/2d.jpeg)
 
 major notations:
 - 2D point is described by (x, y)
@@ -44,6 +45,7 @@ Useful functionality:
 ## 3D Geometry
 
 The `cv_core.3D_geometry` module implements functionality that is related to basic 3D geometry.
+![3d geometry image](./doc/3d_surface.jpeg)
 
 major notations:
 - 3D plane is handled by `Plane3D` class
@@ -61,13 +63,19 @@ Useful functionality:
 
 
 ## Pinhole Camera
-
 The `cv_core.pinhole_camera` module implements functionality that is related to camera geometry.
+<img src="./doc/pinhole.png" alt="image" style="width:300px;height:auto;">
+
+
 
 major notations:
 - camera is handled by `PinholeCamera` class
 
 Useful functionality:
+- Camera Calibration:
+  - intrinsic calibration pinhole / fisheye
+  - stereo calibration
+  - visual - inertial calibration (based on Kalibr)
 - PinholeCamera functionality:
   - project world point to pixel
   - back-project pixel to 3D world ray
