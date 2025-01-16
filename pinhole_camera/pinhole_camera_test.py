@@ -60,6 +60,10 @@ def _random_pinhole_camera_params(n):
     aspect = image_aspect_ratio_range[0] + np.random.rand(n) * (image_aspect_ratio_range[1] - image_aspect_ratio_range[0])
     img_size_y = np.round(img_size_x * aspect)
 
+    img_size_x = np.round(img_size_x / 2) * 2
+    img_size_y = np.round(img_size_y / 2) * 2
+
+
     fovx = fov_range[0] + np.random.rand(n) * (fov_range[1] - fov_range[0])
     fovx = fovx * np.pi / 180
     fovy = fovx * aspect + (np.random.rand(n) - 0.5) * 2 * 0.01 * fovx  # add small pertubation so that fx != fy
@@ -76,7 +80,7 @@ def _random_pinhole_camera_params(n):
     for i in range(n):
         id = 'camera_{}'.format(i)
         model = np.random.choice(pinhole_camera.CameraModel)
-        model = pinhole_camera.CameraModel.PINHOLE
+        # model = pinhole_camera.CameraModel.PINHOLE
 
         K = np.array([[fx[i], 0, cx[i]],
                       [0, fy[i], cy[i]],
@@ -658,6 +662,10 @@ if __name__ == "__main__":
         traceback.print_exc()
 
 
+    # TODO: not all testds pass.
+    #       opencv project and undistort seems to not be consistent with high distortions
+    #       a small portion of fisheye tests fail - see if that is the reason
+    #       it seems fails happen when the angle and FOV is so that some pixel rays intersect plane very far away
     try:
         res = test_project_points_random()
         if res:
