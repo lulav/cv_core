@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-import rigid3dtform
+from .rigid3dtform import Rigid3dTform
 
 
 def _random_3d_transform(n):
@@ -13,7 +13,7 @@ def _random_3d_transform(n):
     translations = []
     for i in range(n):
         tvec =  (np.random.rand(1, 3) - 0.5) * 10
-        translations.append(rigid3dtform.Rigid3dTform(rotations[i], tvec))
+        translations.append(Rigid3dTform(rotations[i], tvec))
     return translations
 
 

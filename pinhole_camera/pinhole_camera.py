@@ -5,6 +5,7 @@ import scipy as sp
 import yaml
 from enum import Enum
 from geometry_3D.rigid3dtform import Rigid3dTform
+import matplotlib.pyplot as plt
 
 
 class CameraModel(Enum):
@@ -107,10 +108,10 @@ class PinholeCamera:
 
             if 'T_cam_to_body' in data.keys():
                 T = np.array(data['T_cam_to_body'])
-                if T.size != 12:
+                if T.size != 16:
                     raise Exception('invalid T_cam_to_body')
                 else:
-                    self.T_cam_to_body = np.resize(T, (3, 4))
+                    self.T_cam_to_body = np.resize(T, (4, 4))
 
         return
 
@@ -154,7 +155,7 @@ class PinholeCamera:
             if T_cam_to_body.size != 16:
                 raise Exception('invalid T_cam_to_body')
             else:
-                self.T_cam_to_body = np.resize(T_cam_to_body, (3, 4))
+                self.T_cam_to_body = np.resize(T_cam_to_body, (4, 4))
 
         return
 
@@ -206,13 +207,15 @@ class PinholeCamera:
 
         return ie_equal
 
-    def _pixel_in_image(self, pixels):
+    def _pixel_in_image(self, pixels, epsilon=1e-9):
         """
         check if pixel is inside the image
         :param pixels: [nx2] pixel coordimates
         :return:
         """
-        return np.bitwise_and(0 <= pixels[:,0] <= self.image_size[1], 0 <= pixels[:, 1] <= self.image_size[0])
+        idx1 = np.bitwise_and(-epsilon <= pixels[:, 0], pixels[:, 0] <= self.image_size[0] + epsilon)
+        idx2 = np.bitwise_and(-epsilon <= pixels[:, 1], pixels[:, 1] <= self.image_size[1] + epsilon)
+        return np.bitwise_and(idx1, idx2)
 
     def project_points(self, world_points, camera_pose:Rigid3dTform):
         """
@@ -226,16 +229,16 @@ class PinholeCamera:
             raise Exception('invalid points size! expecting [nx3]')
 
         # get LOS in camera coordinates
+        tvec = camera_pose.invert().t
+        rvec, _ = cv2.Rodrigues(camera_pose.invert().R.as_matrix())
         if self.model is CameraModel.PINHOLE:
-            tvec = camera_pose.t
-            rvec = cv2.Rodrigues(camera_pose.R.as_matrix())
-            image_points = cv2.projectPoints(world_points, rvec, tvec, self.K, self.distortion_coefficients)
-
+            image_points, _ = cv2.projectPoints(world_points, rvec, tvec, self.K, self.distortion_coefficients)
         elif self.model is CameraModel.FISHEYE:
-            T = camera_pose.T
-            image_points = cv2.fisheye.projectPoints(world_points, T, self.K, self.distortion_coefficients)
+            world_points = world_points.reshape(-1, 1, 3)
+            image_points, _ = cv2.fisheye.projectPoints(world_points, rvec, tvec, self.K, self.distortion_coefficients)
         else:
             raise Exception('project_points does not support {} camera model'.format(self.model))
+        image_points = image_points.squeeze()
 
         # check if in image
         is_in_image = self._pixel_in_image(image_points)
@@ -250,11 +253,15 @@ class PinholeCamera:
                                 this may be:
                                 - [3x3] rotation_matrix
                                 - scipy rotation
-        :return: world points [nx3] numpy array
+        :return: corresponding line of sight for each pixel [nx3] numpy array
+                 NOTE: los size is NOT normalized to 1!
+                       alternatively, for each los z=1
+                       This is more intuitive for easy to understanding los and plotting
         """
         image_points = np.array(image_points)
-        if image_points.shape[1] != 3:
-            raise Exception('invalid points size! expecting [nx3]')
+        if image_points.shape[1] != 2:
+            raise Exception('invalid points size! expecting [nx2]')
+        n = image_points.shape[0]
 
         if isinstance(camera_rotation, sp.spatial.transform._rotation.Rotation):
             R = camera_rotation.as_matrix()
@@ -263,16 +270,86 @@ class PinholeCamera:
         else:
             raise Exception('invalid rotation format!')
 
-        # get LOS in camera coordinates
-        raw_points = cv2.undistortPoints(image_points, self.K, self.distortion_coefficients, R=np.eye(3), P=np.eye(3))
-
-        # normalize
-        normalized_points =  raw_points / np.linalg.norm(raw_points, ord=2, axis=1)
-
-        # rotate to world coordinates
-        world_points = np.matmul(R, normalized_points.transpose())
-
         # check if in image
         is_in_image = self._pixel_in_image(image_points)
 
-        return world_points.transpose(), is_in_image
+        # get LOS in camera coordinates
+        if self.model is CameraModel.PINHOLE:
+            los_cam_frame = cv2.undistortPoints(image_points, self.K, self.distortion_coefficients, R=np.eye(3), P=np.eye(3))
+        elif self.model is CameraModel.FISHEYE:
+            image_points = image_points.reshape(-1, 1, 2)
+            los_cam_frame = cv2.fisheye.undistortPoints(image_points, self.K, self.distortion_coefficients, R=np.eye(3), P=np.eye(3))
+        else:
+            raise Exception('project_points does not support {} camera model'.format(self.model))
+        los_cam_frame = los_cam_frame.squeeze()
+        los_cam_frame = np.hstack((los_cam_frame, np.ones((n, 1))))
+
+        # normalize
+        # normalized_los =  los_cam_frame / np.reshape(np.linalg.norm(los_cam_frame, ord=2, axis=1), (n, 1))
+
+        # rotate to world coordinates
+        los = np.matmul(R, los_cam_frame.transpose()).transpose()
+
+        # if np.any(np.abs(los[:, 2]) < 1e-8):
+        #     aa=5
+        return los, is_in_image
+
+    def plot(self, camera_pose, fig=None, ax=None, color=(0.5,0.5,1), scale=1):
+        """
+        plot camera
+        :param camera_pose: rigid3dtform
+        :param fig: matplotlib figure
+        :param ax: matplotlib axes
+        :param color: (1x3) tuple matplotlib style
+        :return:
+        """
+        if fig is None:
+            fig = plt.figure('bag record timing')
+        if ax is None:
+            ax = plt.Subplot(fig, 111)
+        if not isinstance(camera_pose, Rigid3dTform):
+            raise Exception('invalid camera pose')
+
+        # camera position
+        origin = camera_pose.t.flatten()
+
+        # ROI points
+        # -----|-----
+        # |    |    |
+        # |         |
+        # |         |
+        # -----------
+        image_points = np.array([[0,  0],   # top left
+                                 [self.image_size[0] , 0],   # top right
+                                 [self.image_size[0], self.image_size[1]],   # bottom right
+                                 [0, self.image_size[1]],   # bottom left
+                                 [self.image_size[0]/2, 0],   # top center
+                                 [self.image_size[0]/2, self.image_size[1]/5]])   # top center 2
+        los, _ = self.pixel_to_los(image_points, np.eye(3))
+
+        # normalize so that
+        los = los * scale  # normalize to required scale
+                           # by default los is so that z=1 in camera coordinates
+        # los = np.matmul(camera_pose.R.as_matrix(), los.transpose()).transpose()
+        los = camera_pose.transform_points(los)  # transform from camera coordinates to world
+        roi_points = los[:4, :]
+        top_points = los[4:, :]
+
+        p = np.vstack((roi_points[0, :],
+                       top_points[0, :],
+                       top_points[1, :],
+                       top_points[0, :],
+                       roi_points[1, :],
+                       origin,
+                       roi_points[0, :],
+                       roi_points[3, :],
+                       roi_points[2, :],
+                       origin,
+                       roi_points[3, :],
+                       roi_points[2, :],
+                       roi_points[1, :]))
+
+        plot_obj1 = ax.plot(p[:, 0], p[:, 1], p[:, 2], color=color)
+        plt.show(block=False)
+
+        return plot_obj1

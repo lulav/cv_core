@@ -1,6 +1,9 @@
 import numpy as np
 import scipy as sp
-from numpy.ma.core import reshape
+# from scipy.special import dtype
+
+
+# from numpy.ma.core import reshape
 
 
 class Rigid3dTform:
@@ -24,7 +27,7 @@ class Rigid3dTform:
         elif np.array(R).size == 4:
                 self.R = sp.spatial.transform.Rotation.from_quat(R)
 
-        self.t = np.reshape(np.array(t), (3,1))
+        self.t = np.reshape(np.array(t, dtype=np.float32), (3,1))
 
         # matrix notation:
         # T = [  R,   t]

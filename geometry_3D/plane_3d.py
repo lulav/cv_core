@@ -231,12 +231,12 @@ class Plane3D:
         O = self.origin.transpose()
 
         tp = np.zeros((n, 1)) + np.nan
-        tp_tmp = - np.divide(np.matmul(self.normal, (C[idx0, :].transpose() - O)),
+        tp_tmp = - np.divide(np.matmul(self.normal, (C.transpose() - O)),
                              np.matmul(self.normal, ray_direction[idx0, :].transpose()))
         tp[idx0, :] = tp_tmp.transpose()
 
         intersection_points = np.zeros((n, 3)) + np.nan
-        intersection_points[idx0, :] = ray_direction[idx0, :] * tp[idx0, :] + C[idx0, :]
+        intersection_points[idx0, :] = ray_direction[idx0, :] * tp[idx0, :] + C
 
         # check if intersection is before ray
         idx_point_in_front_of_ray = tp.flatten() > 0
