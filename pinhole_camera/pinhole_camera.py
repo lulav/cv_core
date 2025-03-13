@@ -353,3 +353,31 @@ class PinholeCamera:
         plt.show(block=False)
 
         return plot_obj1
+
+
+def focal_length_to_fov(focal_length, image_size):
+    """
+    convert focal length and image size to fov
+    :param focal_length: [nx1] focal length in pixels
+    :param image_size:  [nx1] image size in pixels
+    :return: fov: [nx1] frame field of view in radians
+    """
+    focal_length = np.array(focal_length, dtype=np.float32).flatten()
+    image_size = np.array(image_size, dtype=np.float32).flatten()
+    if focal_length.size != image_size.size:
+        raise Exception('invalid input sizes!')
+    return np.arctan2(image_size/2.0, focal_length) * 2.0
+
+
+def fov_to_focal_length(fov, image_size):
+    """
+    convert focal length and image size to fov
+    :param  fov: [nx1] frame field of view in radians
+    :param image_size:  [nx1] image size in pixels
+    :return: focal_length: [nx1] focal length in pixels
+    """
+    fov = np.array(fov, dtype=np.float32).flatten()
+    image_size = np.array(image_size, dtype=np.float32).flatten()
+    if fov.size != image_size.size:
+        raise Exception('invalid input sizes!')
+    return (image_size / 2.0) / np.tan(fov)
