@@ -70,11 +70,12 @@ class CameraStereoCalibrator:
                 j = frame_ids_right.index(fid_left)
                 stereo_frames.append({'left': self.image_files_left[i],'right': self.image_files_right[j]})
         num_matches = len(stereo_frames)
+        if num_matches == 0:
+            raise Exception('stereo frames were not found!')
+
         print('----- found {} stereo_frames\n'.format(num_matches))
         if num_matches != len(frame_ids_left) or num_matches != len(frame_ids_right):
             raise Exception('frame with no stereo match!')
-        if num_matches == 0:
-            raise Exception('no stereo match found!')
 
         # get intrinsic calibration
         if not os.path.isfile(intrinsic_calibration_file_left):
@@ -322,13 +323,13 @@ if __name__ == '__main__':
     intrinsic_calibration_file_left = args.intrinsic_file_left
     intrinsic_calibration_file_right = args.intrinsic_file_right
 
-    # output_dir =  './results/stereo_calibration'
-    # input_folder = './examples/stereo_calibration'
-    # left_images_folder = os.path.join(input_folder, 'stereo', 'left')
-    # right_images_folder = os.path.join(input_folder, 'stereo', 'right')
-    # intrinsic_calibration_file_left = os.path.join(input_folder, 'camera_intrinsics_left.yaml')
-    # intrinsic_calibration_file_right = os.path.join(input_folder, 'camera_intrinsics_right.yaml')
-    # calibration_board_file =  os.path.join(input_folder,'calibration_chessboard.yaml')
+    output_dir =  './results/stereo_calibration'
+    input_folder = './examples/stereo_calibration'
+    left_images_folder = os.path.join(input_folder, 'stereo', 'left')
+    right_images_folder = os.path.join(input_folder, 'stereo', 'right')
+    intrinsic_calibration_file_left = os.path.join(input_folder, 'camera_intrinsics_left.yaml')
+    intrinsic_calibration_file_right = os.path.join(input_folder, 'camera_intrinsics_right.yaml')
+    calibration_board_file =  os.path.join(input_folder,'calibration_chessboard.yaml')
 
     print('calibrating')
     csc = CameraStereoCalibrator()
