@@ -24,6 +24,24 @@ This repo can be installed with pip as a python package.
     pip install upgrade pip
     pip install '/local/path/to/cv_core'
 
+* install options:
+   
+  some of the functionality in the `cv_core.geometry_2D` and `cv_core.geometry_3D` subpackages
+  had dual implementation:
+  * explicit implementation using only numpy
+  * shapely implementation
+  
+  Explicit implementation is good if you don't want to import shapely, 
+  and can also be used as a reference for embedded implementation. Shapely implementation is more reliable, and probably faster.
+  
+  If you want to use the shapely implementation:
+  + install with shaply extra:
+  
+        pip install '/local/path/to/cv_core'[shapely]
+  
+  + set `use_shaply=True` when calling the relevant functions.  
+
+
 4. verify installation is OK:
 
     
