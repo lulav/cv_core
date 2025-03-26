@@ -7,8 +7,8 @@ import numpy as np
 # import scipy as sp
 import matplotlib.pyplot as plt
 import yaml
-import camera_calibration as ccu
-import pinhole_camera
+from cv_core import camera_calibration as ccu
+import cv_core.pinhole_camera as pinhole_camera
 
 class CameraStereoCalibrator:
     def __init__(self,):
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     intrinsic_calibration_file_left = args.intrinsic_file_left
     intrinsic_calibration_file_right = args.intrinsic_file_right
 
-    output_dir =  './results/stereo_calibration'
+    output_dir = 'results/stereo_calibration'
     input_folder = './examples/stereo_calibration'
     left_images_folder = os.path.join(input_folder, 'stereo', 'left')
     right_images_folder = os.path.join(input_folder, 'stereo', 'right')

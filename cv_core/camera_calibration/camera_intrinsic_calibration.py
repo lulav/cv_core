@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 # import yaml
 # from numpy.array_api import float64
-import camera_calibration as ccu
-import pinhole_camera
+from cv_core import camera_calibration as ccu
+import cv_core.pinhole_camera as pinhole_camera
 
 
 class CameraIntrinsicCalibrator:

@@ -72,6 +72,12 @@ def line_segments_intersect_test(draw=False, n=100):
 
 if __name__ == "__main__":
 
+    # add line from two points test
+    # generate line parameters, choose two points, and test
+
+    # add line parameterization test
+    # generate line from two points, and test
+
     # res = line_segments_intersect_test(draw=True, n=10)
     res = line_segments_intersect_test(draw=False, n=100)
     if res:

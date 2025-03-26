@@ -4,7 +4,7 @@ import numpy as np
 import scipy as sp
 import yaml
 from enum import Enum
-from geometry_3D.rigid3dtform import Rigid3dTform
+from cv_core.geometry_3D.rigid3dtform import Rigid3dTform
 import matplotlib.pyplot as plt
 
 
