@@ -9,11 +9,40 @@ We mostly use opencv / numpy / scipy functionality to implement higher level uti
 # Setup
 
 ----
-install python 3.11+
-
-install python packages according to [requirements.txt](./requirements.txt)
 
 
+## install with pip
+
+----
+This repo can be installed with pip as a python package.
+
+1. clone / download this repo
+2. setup your python env 3.11+ (virtual env recommended)
+3. install this package into your python
+
+    
+    pip install upgrade pip
+    pip install '/local/path/to/cv_core'
+
+4. verify installation is OK:
+
+    
+    pip install show cv_core
+ 
+
+
+## manual Setup
+
+----
+
+1. clone / download this repo
+2. setup your python env 3.11+ (virtual env recommended)
+3. install python packages according to [requirements.txt](./requirements.txt) 
+4. import cv_core to your python program by adding to python path
+
+
+    import sys
+    sys.path.append('/local/path/to/cv_core')
 
 # Usage
 
