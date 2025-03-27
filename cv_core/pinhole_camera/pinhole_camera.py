@@ -4,6 +4,9 @@ import numpy as np
 import scipy as sp
 import yaml
 from enum import Enum
+
+from numpy.array_api import uint32
+
 from cv_core.geometry_3D.rigid3dtform import Rigid3dTform
 import matplotlib.pyplot as plt
 
@@ -126,10 +129,9 @@ class PinholeCamera:
         else:
             raise Exception('ivalid camera model type!')
 
-        if isinstance(intrinsic_matrix, np.ndarray) and intrinsic_matrix.size == 9:
+        intrinsic_matrix = np.array(intrinsic_matrix, dtype=np.float32)
+        if intrinsic_matrix.size == 9:
             intrinsic_matrix = np.reshape(intrinsic_matrix, (3, 3))
-        elif (isinstance(intrinsic_matrix, list) or isinstance(intrinsic_matrix, tuple)) and len(intrinsic_matrix) == 9:
-            intrinsic_matrix = np.reshape(np.array(intrinsic_matrix), (3, 3))
         else:
             raise Exception('invalid intrinsic matrix')
         self.K = intrinsic_matrix
@@ -137,20 +139,19 @@ class PinholeCamera:
         self.principal_point = (intrinsic_matrix[0, 2], intrinsic_matrix[1, 2])
         self.skew = skew
 
-        if isinstance(dist_coeffs, np.ndarray) and dist_coeffs.size <= 8:
+        dist_coeffs = np.array(dist_coeffs, dtype=np.float32)
+        if dist_coeffs.size <= 8:
             self.distortion_coefficients = dist_coeffs.flatten()
-        elif (isinstance(dist_coeffs, list) or isinstance(dist_coeffs, tuple)) and len(dist_coeffs) <= 8:
-            self.distortion_coefficients = np.array(dist_coeffs).flatten()
         else:
             raise Exception('invalid distortion coefficients')
 
-        if isinstance(image_size, np.ndarray) and image_size.size == 2:
+        image_size = np.array(image_size, dtype=np.uint32)
+        if image_size.size == 2:
             self.image_size = image_size.flatten()
-        elif (isinstance(image_size, list) or isinstance(image_size, tuple)) and len(image_size) == 2:
-            self.image_size = np.array(image_size).flatten()
         else:
             raise Exception('invalid distortion coefficients')
 
+        T_cam_to_body = np.array(T_cam_to_body, dtype=np.float32)
         if T_cam_to_body is not None:
             if T_cam_to_body.size != 16:
                 raise Exception('invalid T_cam_to_body')
@@ -380,4 +381,4 @@ def fov_to_focal_length(fov, image_size):
     image_size = np.array(image_size, dtype=np.float32).flatten()
     if fov.size != image_size.size:
         raise Exception('invalid input sizes!')
-    return (image_size / 2.0) / np.tan(fov)
+    return (image_size / 2.0) / np.tan(fov/2)
