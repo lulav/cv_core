@@ -123,6 +123,7 @@ def polygon_intersect(poly_points_1, poly_points_2, use_shapely=True):
     """
 
     if use_shapely:
+        import shapely
         line1 = shapely.geometry.LineString(poly_points_1)
         polygon1 = shapely.geometry.Polygon(line1)
 
