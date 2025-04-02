@@ -149,8 +149,9 @@ class PinholeCamera:
         else:
             raise Exception('invalid distortion coefficients')
 
-        T_cam_to_body = np.array(T_cam_to_body, dtype=np.float32)
+
         if T_cam_to_body is not None:
+            T_cam_to_body = np.array(T_cam_to_body, dtype=np.float32)
             if T_cam_to_body.size != 16:
                 raise Exception('invalid T_cam_to_body')
             else:
