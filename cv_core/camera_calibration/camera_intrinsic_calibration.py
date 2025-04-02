@@ -198,6 +198,12 @@ class CameraIntrinsicCalibrator:
                 clr = plt.cm.hsv(clr_idx[i])
                 # print('color {}: {} = {}'.format(i,clr_idx[i],clr))
                 ax2.scatter(p[:,:,0], p[:,:,1], color=clr)
+            img_borders = np.array([[0, 0],
+                                    [self.image_width, 0],
+                                    [self.image_width, self.image_height],
+                                    [0, self.image_height],
+                                    [0, 0]])
+            ax2.plot(img_borders[:, 0], img_borders[:, 1], '-b')
 
             if fig_save_folder is not None:
                 if not(os.path.isdir(fig_save_folder)):
