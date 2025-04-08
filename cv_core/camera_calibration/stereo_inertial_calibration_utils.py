@@ -1,7 +1,6 @@
 """reformat record to Kalibr bag"""
 
 import os
-import argparse
 import yaml
 import calibration_utils as ccu
 

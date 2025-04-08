@@ -1,8 +1,5 @@
 import numpy as np
 import scipy as sp
-# from scipy.special import dtype
-
-# from numpy.ma.core import reshape
 import rigid3dtform as rt3d
 
 

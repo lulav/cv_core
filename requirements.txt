@@ -2,3 +2,7 @@ numpy~=1.26.4
 matplotlib~=3.9.3
 scipy~=1.14.1
 opencv-python~=4.10.0.84
+pyyaml~=6.0.2
+pillow~=11.0.0
+rosbags~=0.10.6
+setuptools~=75.1.0

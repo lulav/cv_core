@@ -1,12 +1,10 @@
 import sys
-from logging import warning
 import traceback
 import numpy as np
 import geometry_3D.plane_3d as p3d
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
-from mpl_toolkits.mplot3d import axes3d
 
 def test_3d_plane_create(n, epsilon = 1e-9):
 

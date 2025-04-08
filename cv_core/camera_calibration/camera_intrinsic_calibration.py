@@ -4,10 +4,7 @@ import os
 import argparse
 import cv2
 import numpy as np
-# import scipy as sp
 import matplotlib.pyplot as plt
-# import yaml
-# from numpy.array_api import float64
 from cv_core import camera_calibration as ccu
 import cv_core.pinhole_camera as pinhole_camera
 

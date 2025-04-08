@@ -131,6 +131,7 @@ def polygon_intersect(poly_points_1, poly_points_2, use_shapely=True):
         polygon2 = shapely.geometry.Polygon(line2)
         intersection_polygon = polygon1.intersection(polygon2)
 
+
     else:
         raise Exception('explicit implementation not supported yet!')
 

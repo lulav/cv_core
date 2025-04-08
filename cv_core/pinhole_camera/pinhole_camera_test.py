@@ -1,13 +1,9 @@
 import os
-import random
 import traceback
 import cv2
 import numpy as np
 import scipy as sp
-from PIL.ImageOps import scale
-from fontTools.unicodedata import block
 
-# import geometry_3D as g3d
 import pinhole_camera
 import geometry_3D as g3d
 import matplotlib

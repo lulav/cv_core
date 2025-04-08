@@ -125,11 +125,13 @@ setup(
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
     # install_requires=["opencv"],  # Optional
     install_requires=[
-        'numpy>=1.20.0',  # Let's say we need numpy for math-related utilities
+        'numpy>=1.26.4',  # Let's say we need numpy for math-related utilities
         'scipy>=1.3.0',  # Add pandas as a dependency, maybe for handling data
         'opencv-python>=4.10.0',
+        'pyyaml>=6.0.2'
         'shapely>=2.0.6'
     ],
+
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:

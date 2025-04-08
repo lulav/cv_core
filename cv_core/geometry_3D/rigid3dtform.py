@@ -1,10 +1,5 @@
 import numpy as np
 import scipy as sp
-# from scipy.special import dtype
-
-
-# from numpy.ma.core import reshape
-
 
 class Rigid3dTform:
     """

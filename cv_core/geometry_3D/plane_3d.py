@@ -1,11 +1,6 @@
 import numpy as np
-import scipy as sp
-from fontTools.misc.bezierTools import epsilon
-from numpy.ma.core import reshape
 from enum import Enum
-import matplotlib
 import matplotlib.pyplot as plt
-
 
 
 class ProjectionAxis(Enum):

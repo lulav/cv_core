@@ -1,8 +1,6 @@
 """reformat record to Kalibr bag"""
 
 import os
-from os import makedirs
-
 import numpy as np
 import cv2
 import glob
@@ -134,7 +132,7 @@ def save_bag_camera_frames(rosbag_writer, images_folders, camera_topics, camera_
         try:
             folder_path = os.path.dirname(rosbag_writer)
             if not os.path.isdir(folder_path):
-                makedirs(folder_path)
+                os.makedirs(folder_path)
             rosbag_writer = Writer(rosbag_writer)
             rosbag_writer.open()
             close_writer = True
