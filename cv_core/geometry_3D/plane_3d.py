@@ -270,6 +270,74 @@ class Plane3D:
 
         return intersection_points, valid_index
 
+
+    def line_segment_intersection(self, p1, p2, epsilon=1e-9):
+        """
+        intersect ray with the plane
+
+        :param p1: line segment start point [nx3]
+        :param p2: line segment end point [nx3]
+        :param epsilon: minimal value for testing if ray is parallel to plane
+        :return:  intersection_points - 3D world points - intersection of rays with plane [m,3]
+                  nan if for rays with no intersection
+        :return:  is_valid - 1 line segment intersects plane
+                             0 line intersects plane but outside the segment
+                             -1 no intersection - line is parallel to plane
+        """
+
+        # check inputs
+        p1 = np.array(p1).reshape(-1,3)
+        p2 = np.array(p2).reshape(-1,3)
+        if p1.size != p2.size:
+            raise Exception('invalid input sizes!')
+        n = p1.shape[0]
+
+        is_valid = np.zeros(n)
+        intersection_points = np.zeros((n, 3)) + np.nan
+
+        # TODO: vectorize
+        # u = p2 - p1
+        # un = np.sum(u * self.normal, axis=1)  # this is like np.dot(u, self.normal) per each row
+        # un_normalized = np.divide(un, np.linalg.norm(un, axis=1).reshape(n, 1))  # normalize per row
+        # idx1 =  abs(un_normalized) < epsilon
+        # intersection_points[idx1, :] = np.nan
+        # is_valid[idx1] = -1
+        # ...
+
+        for i in range(n):
+            # Direction vector of the line
+            u = p2[i, :] - p1[i, :]
+
+            # projection of u on the plane normal
+            un = np.dot(u, self.normal.flatten())
+
+            # Check if line and plane are parallel
+            # normalize so we test angle between vectors independently of the segment size
+            u_normalized = u / np.linalg.norm(u)
+            un_normalized = np.dot(u_normalized, self.normal.flatten())
+            if abs(un_normalized) < epsilon:
+                intersection_points[i, :] = np.nan
+                is_valid[i] = -1  # no intersection (line parallel to plane)
+
+            else:
+                # find segment parametric length of line plane intersection
+                #      (p1-o) projection on the plane normal
+                #  t = -------------------------------------
+                #      (p1-p2) projection on the plane normal
+                #  t == 0 is at p1
+                #  t == 1 is at p2
+                w = p1[i,:] - self.origin
+                t = -np.dot(self.normal.flatten(), w.flatten()) / un
+                if 0 <= t <= 1:
+                    intersection_points[i, :] = p1[i,:] + t * u  # Intersection point within the segment
+                    is_valid[i] = 1  # intersect within the line segment
+                else:
+                    intersection_points [i, :] = np.nan
+                    is_valid[i] = 0  # line intersects, but outside the line segment
+
+        return intersection_points, is_valid
+
+
     def plot(self, points, lims_scale_factor=1, ax=None, color=(0.5, 0.5, 1), alpha=0.6):
         """
         plot plane. plane limita will be taken from the extreme x,y in points

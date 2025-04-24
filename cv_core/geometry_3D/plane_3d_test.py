@@ -1,9 +1,10 @@
 import sys
 import traceback
 import numpy as np
-import geometry_3D.plane_3d as p3d
 import matplotlib
 import matplotlib.pyplot as plt
+from numpy.ma.core import zeros_like
+import plane_3d as p3d
 matplotlib.use('TkAgg')
 
 def test_3d_plane_create(n, epsilon = 1e-9):
@@ -153,7 +154,7 @@ def test_3d_plane_project_points(n=100, m=20, draw=False):
 
     return np.all(res1) and np.all(res2) and np.all(res3) and np.all(res4)
 
-def test_3d_plane_project_ray(draw=False):
+def test_3d_plane_intersect_ray(draw=False):
     """
     test_plane_ray_intersection
     """
@@ -210,7 +211,104 @@ def test_3d_plane_project_ray(draw=False):
         res3i = np.all( intersection_above_plane == ray_origin_above_plane)
         res4[i] = res1i and res2i and res3i
 
-    return res1 and res2 and res3 and np.all(res4)
+    res = res1 and res2 and res3 and np.all(res4)
+    return res
+
+
+def test_3d_plane_intersect_segment(draw=False):
+    """
+    test plane - line segment intersection
+    """
+    # test1 - xy plane valid intersection
+    # -------------------------------------
+    plane_origin = [0, 0, 0]
+    plane_normal = [0, 0, 1]
+    plane = p3d.Plane3D(plane_normal, plane_origin)
+
+    # random reference points on the plane
+    n = 20
+    xlims = [-10, 10]
+    ylims = [-10, 10]
+    zlims = [-10, 10]
+    x = np.random.rand(n,1) * (xlims[1] - xlims[0]) + xlims[0]
+    y = np.random.rand(n,1) * (ylims[1] - ylims[0]) + ylims[0]
+    z = np.zeros_like(x)
+    ref_intersection_points = np.hstack((x, y, z))
+
+    # random 2 point segments that go through the reference points
+    dx = np.random.rand(n,1) * (xlims[1] - xlims[0]) + xlims[0]
+    dy = np.random.rand(n,1) * (ylims[1] - ylims[0]) + ylims[0]
+    dz = np.random.rand(n,1) * (zlims[1] - zlims[0]) + zlims[0]
+    dp = np.hstack((dx, dy, dz))
+    a1 = np.random.rand(n,1)
+    a2 = np.random.rand(n,1)
+    p1 = ref_intersection_points + dp*a1
+    p2 = ref_intersection_points - dp*a2
+
+    # intersect plane and rays
+    intersection_points, is_valid = plane.line_segment_intersection(p1, p2)
+    res1 = np.max(intersection_points - ref_intersection_points) < 1e-8
+    res2 = np.all(is_valid == 1)
+
+
+    # test2 - xy plane no intersection
+    # -------------------------------------
+    # test parallel points:
+    x = np.random.rand(n, 1) * (xlims[1] - xlims[0]) + xlims[0]
+    y = np.random.rand(n, 1) * (ylims[1] - ylims[0]) + ylims[0]
+    z = np.random.rand(n, 1) * (zlims[1] - zlims[0]) + zlims[0]
+    p1 = np.hstack((x, y, z))
+
+    dx = np.random.rand(n, 1) * (xlims[1] - xlims[0]) + xlims[0]
+    dy = np.random.rand(n, 1) * (ylims[1] - ylims[0]) + ylims[0]
+    dz = np.zeros_like(dx)
+    dp = np.hstack((dx, dy, dz))
+    p2 = p1 + dp
+
+    # intersect plane and rays
+    intersection_points, is_valid = plane.line_segment_intersection(p1, p2)
+    res3 = np.isnan(intersection_points).all()
+    res4 = np.all(is_valid == -1)
+
+
+    # test3 - xy plane with intersection outside the segment
+    # ------------------------------------------------------
+    plane_origin = [0, 0, 0]
+    plane_normal = [0, 0, 1]
+    plane = p3d.Plane3D(plane_normal, plane_origin)
+
+    # random reference points on the plane
+    n = 20
+    xlims = [-10, 10]
+    ylims = [-10, 10]
+    zlims = [-10, 10]
+    x = np.random.rand(n, 1) * (xlims[1] - xlims[0]) + xlims[0]
+    y = np.random.rand(n, 1) * (ylims[1] - ylims[0]) + ylims[0]
+    z = np.zeros_like(x)
+    ref_intersection_points = np.hstack((x, y, z))
+
+    # random 2 point segments that go through the reference points
+    dx = np.random.rand(n, 1) * (xlims[1] - xlims[0]) + xlims[0]
+    dy = np.random.rand(n, 1) * (ylims[1] - ylims[0]) + ylims[0]
+    dz = np.random.rand(n, 1) * (zlims[1] - zlims[0]) + zlims[0]
+    dp = np.hstack((dx, dy, dz))
+    a1 = np.random.rand(n, 1)
+    a2 = np.random.rand(n, 1)
+    p1 = ref_intersection_points + dp*a1
+    p2 = ref_intersection_points + dp*a2
+
+    # intersect plane and rays
+    intersection_points, is_valid = plane.line_segment_intersection(p1, p2)
+    res5 = np.isnan(intersection_points).all()
+    res6 = np.all(is_valid == 0)
+
+
+    # test4/5/6 - general plane
+    # --------------------------
+    # TODO: test general plane
+
+    res = res1 and res2 and res3 and res4 and res5 and res6
+    return res
 
 
 def _generate_random_plane_intersection_rays(plane_origin, plane_normal, n, xlims, ylims, zlims):
@@ -276,7 +374,7 @@ if __name__ == "__main__":
         traceback.print_exception(exc_type, exc_value, exc_traceback)
 
     try:
-        res = test_3d_plane_project_ray(draw=False)
+        res = test_3d_plane_intersect_ray(draw=False)
         if res:
             print('test_3d_plane_project_ray PASSED!')
         else:
@@ -284,3 +382,14 @@ if __name__ == "__main__":
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
+
+    try:
+        res = test_3d_plane_intersect_segment(draw=False)
+        if res:
+            print('test_3d_plane_intersect_segment PASSED!')
+        else:
+            print('test_3d_plane_intersect_segment FAILED!')
+    except:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_traceback)
+
