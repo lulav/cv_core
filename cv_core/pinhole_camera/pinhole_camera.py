@@ -224,7 +224,7 @@ class PinholeCamera:
         :param camera_pose: Rigid3dTform that transforms points from camera coordinates o world coordinates
         :return: image points [nx2] numpy array
         """
-        world_points = np.array(world_points)
+        world_points = np.array(world_points, dtype=np.float32)
         if world_points.shape[1] != 3:
             raise Exception('invalid points size! expecting [nx3]')
 
