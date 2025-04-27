@@ -281,7 +281,7 @@ class PinholeCamera:
             los_cam_frame = cv2.fisheye.undistortPoints(image_points, self.K, self.distortion_coefficients, R=np.eye(3), P=np.eye(3))
         else:
             raise Exception('project_points does not support {} camera model'.format(self.model))
-        los_cam_frame = los_cam_frame.squeeze()
+        los_cam_frame = los_cam_frame.reshape(-1,2)
         los_cam_frame = np.hstack((los_cam_frame, np.ones((n, 1))))
 
         # normalize
