@@ -128,7 +128,7 @@ setup(
         'numpy>=1.26.4',  # Let's say we need numpy for math-related utilities
         'scipy>=1.3.0',  # Add pandas as a dependency, maybe for handling data
         'opencv-python>=4.10.0',
-        'pyyaml>=6.0.2'
+        'pyyaml>=6.0.2',
         'shapely>=2.0.6'
     ],
 
