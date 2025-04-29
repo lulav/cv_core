@@ -129,9 +129,17 @@ def polygon_intersect(poly_points_1, poly_points_2, use_shapely=True):
 
         line2 = shapely.geometry.LineString(poly_points_2)
         polygon2 = shapely.geometry.Polygon(line2)
-        intersection_polygon = polygon1.intersection(polygon2)
+        intersection_polygon_shapely = polygon1.intersection(polygon2)
 
-
+        # convert from shapely object to simple np array
+        intersection_polygon = np.array(intersection_polygon_shapely.exterior.coords)
+        # shapely can have it's "geometry" configured to be 2D or 3D
+        # it always does only 2D geometric operations,
+        # but the coordinates of shapely object has 3 columns in case it's geometry is configured to 3D.
+        # The third coordinate might contain nans which may cause failure at the use end.
+        # e.g. if user tries to round the points tp plot
+        # therefore we make sure to take only the first two columns
+        intersection_polygon = intersection_polygon[:-1,:2]
     else:
         raise Exception('explicit implementation not supported yet!')
 
